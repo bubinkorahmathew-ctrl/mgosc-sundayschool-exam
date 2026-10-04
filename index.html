@@ -629,6 +629,141 @@
       border-color: var(--gold);
     }
 
+    /* Feedback */
+    .feedback-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 8px;
+      padding: 20px 22px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .feedback-card h2 {
+      font-family: var(--font-serif);
+      font-size: 1.45rem;
+      margin-bottom: 2px;
+    }
+
+    .feedback-card h2.ml-text {
+      font-size: 1.15rem;
+    }
+
+    .feedback-card p {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .btn-maroon {
+      background: var(--maroon);
+      color: #fff;
+      border: none;
+      box-shadow: 0 10px 22px -12px var(--maroon);
+    }
+
+    [data-theme="dark"] .btn-maroon {
+      color: #12100e;
+    }
+
+    .fb-box {
+      max-width: 460px;
+      text-align: left;
+    }
+
+    .fb-box h3 {
+      text-align: center;
+    }
+
+    .fb-field {
+      margin-bottom: 14px;
+    }
+
+    .fb-field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .fb-field input,
+    .fb-field select,
+    .fb-field textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.95rem;
+    }
+
+    .fb-field textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .fb-field input:focus,
+    .fb-field select:focus,
+    .fb-field textarea:focus {
+      outline: 2px solid var(--gold);
+      outline-offset: 1px;
+    }
+
+    .stars {
+      display: flex;
+      gap: 4px;
+    }
+
+    .stars button {
+      background: none;
+      border: none;
+      font-size: 1.9rem;
+      line-height: 1;
+      cursor: pointer;
+      color: var(--border);
+      padding: 0 2px;
+      transition: transform 0.15s ease, color 0.15s ease;
+    }
+
+    .stars button.on {
+      color: var(--gold-bright);
+    }
+
+    .stars button:hover {
+      transform: scale(1.15);
+    }
+
+    .fb-error {
+      display: none;
+      color: #c0392b;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .fb-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .fb-actions .uc-close {
+      padding: 10px 22px;
+    }
+
+    .fb-thanks {
+      display: none;
+      text-align: center;
+    }
+
     /* Visit counter */
     .visit-count {
       display: flex;
@@ -925,6 +1060,18 @@
       </div>
     </section>
 
+    <section class="section">
+      <div class="feedback-card">
+        <div>
+          <h2 data-en="Share Your Feedback" data-ml="നിങ്ങളുടെ അഭിപ്രായം പങ്കിടുക">Share Your Feedback</h2>
+          <p data-en="Tell us how the practice exams helped you, or what we can improve." data-ml="പരിശീലന പരീക്ഷകൾ എങ്ങനെ സഹായിച്ചു, എന്ത് മെച്ചപ്പെടുത്താം എന്ന് ഞങ്ങളെ അറിയിക്കുക.">Tell us how the practice exams helped you, or what we can improve.</p>
+        </div>
+        <button type="button" class="btn btn-maroon" onclick="openFeedback()">
+          <span aria-hidden="true">💬</span> <span data-en="Give Feedback" data-ml="അഭിപ്രായം നൽകുക">Give Feedback</span>
+        </button>
+      </div>
+    </section>
+
     <div class="visit-count" id="visitCount" hidden>
       <span aria-hidden="true">👁️</span>
       <span data-en="Site visits:" data-ml="സൈറ്റ് സന്ദർശനങ്ങൾ:">Site visits:</span>
@@ -947,6 +1094,54 @@
     </div>
   </div>
 
+  <!-- Feedback Modal -->
+  <div class="uc-overlay" id="fbOverlay" role="dialog" aria-modal="true" aria-labelledby="fbTitle">
+    <div class="uc-box fb-box">
+      <form id="fbForm" novalidate>
+        <h3 id="fbTitle" data-en="Share Your Feedback" data-ml="നിങ്ങളുടെ അഭിപ്രായം പങ്കിടുക">Share Your Feedback</h3>
+        <div class="fb-field">
+          <label for="fbName" data-en="Your name (optional)" data-ml="നിങ്ങളുടെ പേര് (ഐച്ഛികം)">Your name (optional)</label>
+          <input type="text" id="fbName" maxlength="80" autocomplete="name">
+        </div>
+        <div class="fb-field">
+          <label for="fbClass" data-en="Class (optional)" data-ml="ക്ലാസ്സ് (ഐച്ഛികം)">Class (optional)</label>
+          <select id="fbClass">
+            <option value="" data-en="— Select —" data-ml="— തിരഞ്ഞെടുക്കുക —">— Select —</option>
+            <option>Class 5</option><option>Class 6</option><option>Class 7</option><option>Class 8</option>
+            <option>Class 9</option><option>Class 10</option><option>Class 11</option><option>Class 12</option>
+            <option value="Parent / Teacher" data-en="Parent / Teacher" data-ml="രക്ഷിതാവ് / അധ്യാപകൻ">Parent / Teacher</option>
+          </select>
+        </div>
+        <div class="fb-field">
+          <label data-en="Rating (optional)" data-ml="റേറ്റിംഗ് (ഐച്ഛികം)">Rating (optional)</label>
+          <div class="stars" id="fbStars" aria-label="Rating">
+            <button type="button" data-v="1" aria-label="1 star">★</button>
+            <button type="button" data-v="2" aria-label="2 stars">★</button>
+            <button type="button" data-v="3" aria-label="3 stars">★</button>
+            <button type="button" data-v="4" aria-label="4 stars">★</button>
+            <button type="button" data-v="5" aria-label="5 stars">★</button>
+          </div>
+        </div>
+        <div class="fb-field">
+          <label for="fbMessage" data-en="Your feedback" data-ml="നിങ്ങളുടെ അഭിപ്രായം">Your feedback</label>
+          <textarea id="fbMessage" maxlength="1000"></textarea>
+        </div>
+        <div class="fb-error" id="fbError" data-en="Please write your feedback before sending." data-ml="അയയ്ക്കുന്നതിന് മുമ്പ് നിങ്ങളുടെ അഭിപ്രായം എഴുതുക.">Please write your feedback before sending.</div>
+        <div class="fb-actions">
+          <button type="button" class="uc-close" onclick="closeFeedback()" data-en="Cancel" data-ml="റദ്ദാക്കുക">Cancel</button>
+          <button type="submit" class="btn btn-maroon" data-en="Send Feedback" data-ml="അയയ്ക്കുക">Send Feedback</button>
+        </div>
+      </form>
+      <div class="fb-thanks" id="fbThanks">
+        <span class="uc-icon">🙏</span>
+        <h3 data-en="Thank you!" data-ml="നന്ദി!">Thank you!</h3>
+        <p data-en="Your feedback has been sent." data-ml="നിങ്ങളുടെ അഭിപ്രായം അയച്ചു.">Your feedback has been sent.</p>
+        <button type="button" class="uc-close" onclick="closeFeedback()" data-en="Close" data-ml="അടയ്ക്കുക">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="sync-config.js"></script>
   <script>
     var currentLang = localStorage.getItem('ss_lang') || 'en';
     var currentTheme = localStorage.getItem('ss_theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -1021,7 +1216,87 @@
     });
 
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') closeWIP();
+      if (e.key === 'Escape') { closeWIP(); closeFeedback(); }
+    });
+
+    // Feedback: sent to the shared Google Sheet (sync-config.js) and read in admin.html
+    var fbOverlay = document.getElementById('fbOverlay');
+    var fbRating = 0;
+
+    function paintStars() {
+      document.querySelectorAll('#fbStars button').forEach(function(b) {
+        var v = Number(b.getAttribute('data-v'));
+        b.classList.toggle('on', v <= fbRating);
+        b.setAttribute('aria-pressed', v === fbRating ? 'true' : 'false');
+      });
+    }
+
+    document.querySelectorAll('#fbStars button').forEach(function(b) {
+      b.addEventListener('click', function() {
+        var v = Number(b.getAttribute('data-v'));
+        fbRating = (fbRating === v) ? 0 : v;
+        paintStars();
+      });
+    });
+
+    function openFeedback() {
+      document.getElementById('fbForm').reset();
+      document.getElementById('fbForm').style.display = '';
+      document.getElementById('fbThanks').style.display = 'none';
+      document.getElementById('fbError').style.display = 'none';
+      fbRating = 0;
+      paintStars();
+      fbOverlay.classList.add('active');
+      setTimeout(function() { document.getElementById('fbMessage').focus(); }, 50);
+    }
+
+    function closeFeedback() {
+      fbOverlay.classList.remove('active');
+    }
+
+    fbOverlay.addEventListener('click', function(e) {
+      if (e.target === fbOverlay) closeFeedback();
+    });
+
+    document.getElementById('fbForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var message = document.getElementById('fbMessage').value.trim();
+      if (!message) {
+        document.getElementById('fbError').style.display = 'block';
+        document.getElementById('fbMessage').focus();
+        return;
+      }
+      var now = new Date();
+      var fb = {
+        type: 'feedback',
+        id: 'fb_' + now.getTime() + '_' + Math.random().toString(36).substr(2, 6),
+        timestamp: now.toISOString(),
+        name: document.getElementById('fbName').value.trim(),
+        className: document.getElementById('fbClass').value,
+        rating: fbRating,
+        message: message,
+        language: currentLang
+      };
+
+      try {
+        var list = JSON.parse(localStorage.getItem('ss_feedback') || '[]');
+        list.unshift(fb);
+        localStorage.setItem('ss_feedback', JSON.stringify(list.slice(0, 500)));
+      } catch (err) {}
+
+      var url = (window.SS_CLOUD_ENDPOINT || localStorage.getItem('ss_cloud_endpoint') || '').trim();
+      if (url.indexOf('http') === 0) {
+        fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(fb),
+          mode: 'no-cors',
+          keepalive: true
+        }).catch(function(err) { console.warn('Feedback send failed:', err); });
+      }
+
+      document.getElementById('fbForm').style.display = 'none';
+      document.getElementById('fbThanks').style.display = 'block';
     });
 
     // Initialize state

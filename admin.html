@@ -500,6 +500,18 @@
     opacity:.6;
   }
 
+  /* Feedback */
+  .feedback-section{ margin-top:26px; }
+  .feedback-head{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+    margin-bottom:12px;
+  }
+  .feedback-head h2{ font-family:'Cormorant Garamond', serif; font-size:1.6rem; margin:0; }
+  .feedback-summary{ font-size:.85rem; color:var(--muted); font-weight:600; }
+  .fb-stars{ color:#d4a24a; letter-spacing:1px; white-space:nowrap; }
+  .fb-stars .off{ color:var(--border); }
+  .fb-message{ max-width:460px; white-space:pre-wrap; word-break:break-word; line-height:1.45; }
+
   /* Modals */
   .modal-overlay{
     display:none;
@@ -796,6 +808,41 @@
       <button type="button" class="btn btn-outline" onclick="addSampleData()">Add Sample Attempts</button>
     </div>
   </div>
+
+  <!-- Student Feedback -->
+  <div class="feedback-section" id="feedbackSection">
+    <div class="feedback-head">
+      <div>
+        <h2>💬 Student Feedback</h2>
+        <span class="feedback-summary" id="feedbackSummary">No feedback yet</span>
+      </div>
+      <button type="button" class="btn btn-outline" onclick="exportFeedbackCSV()">
+        <span>📥</span> <span>Export Feedback CSV</span>
+      </button>
+    </div>
+    <div class="table-card">
+      <div class="table-responsive">
+        <table id="feedbackTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Date &amp; Time</th>
+              <th>Name</th>
+              <th>Class</th>
+              <th>Rating</th>
+              <th>Feedback</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="feedbackTbody"></tbody>
+        </table>
+      </div>
+      <div id="feedbackEmpty" class="empty-state">
+        <span class="empty-icon">💬</span>
+        <p style="margin:0; font-size:.88rem;">Feedback sent from the home page will appear here.</p>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Attempt Details Modal -->
@@ -856,6 +903,15 @@ function getSheet_() {
   return sheet;
 }
 
+var FEEDBACK_HEADERS = ["ID", "Timestamp", "Name", "Class", "Rating", "Message", "Language"];
+
+function getFeedbackSheet_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Feedback") || ss.insertSheet("Feedback", ss.getNumSheets());
+  if (sheet.getLastRow() === 0) sheet.appendRow(FEEDBACK_HEADERS);
+  return sheet;
+}
+
 function json_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
@@ -866,6 +922,10 @@ function doPost(e) {
   lock.waitLock(20000);
   try {
     var d = JSON.parse(e.postData.contents);
+    if (d.type === "feedback") {
+      getFeedbackSheet_().appendRow([d.id, d.timestamp, d.name, d.className, d.rating || "", d.message, d.language]);
+      return json_({ status: "ok" });
+    }
     var sheet = getSheet_();
     var row = [d.id, d.timestamp, d.className, d.studentName, d.rollNumber, d.studentPhone,
       d.schoolCode, d.diocese, d.score, d.totalQuestions, d.percentage, d.status, d.durationStr,
@@ -906,7 +966,19 @@ function doGet(e) {
       list.push(d);
     });
   }
-  return json_({ status: "ok", attempts: list });
+  var fbSheet = getFeedbackSheet_();
+  var fbLast = fbSheet.getLastRow();
+  var feedback = [];
+  if (fbLast &gt; 1) {
+    fbSheet.getRange(2, 1, fbLast - 1, FEEDBACK_HEADERS.length).getValues().forEach(function (r) {
+      feedback.push({
+        id: String(r[0]), timestamp: r[1] instanceof Date ? r[1].toISOString() : String(r[1]),
+        name: String(r[2]), className: String(r[3]), rating: Number(r[4]) || 0,
+        message: String(r[5]), language: String(r[6])
+      });
+    });
+  }
+  return json_({ status: "ok", attempts: list, feedback: feedback });
 }</pre>
     </details>
   </div>
@@ -1026,6 +1098,7 @@ function doGet(e) {
     attemptsData = getAttempts();
     renderStats();
     renderTable();
+    renderFeedback();
   }
 
   // Cloud sync: read every student's attempts back from the Google Sheet
@@ -1084,6 +1157,7 @@ function doGet(e) {
         });
         merged.sort(function(a, b){ return String(b.timestamp || '').localeCompare(String(a.timestamp || '')); });
         try { localStorage.setItem('ss_exam_attempts', JSON.stringify(merged)); } catch(e) { console.error(e); }
+        if (Array.isArray(data.feedback)) mergeFeedback(data.feedback, deleted);
         loadAttempts();
         setSyncStatus('Synced ' + data.attempts.length + ' records from Google Sheet at ' +
           new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '.');
@@ -1098,6 +1172,92 @@ function doGet(e) {
   window.loadAttempts = function(){
     loadAttempts();
     pullFromCloud();
+  };
+
+  // Student feedback (sent from index.html, stored in the Sheet's "Feedback" tab)
+  function getFeedback(){
+    try { return JSON.parse(localStorage.getItem('ss_feedback') || '[]'); } catch(e) { return []; }
+  }
+
+  function saveFeedback(list){
+    try { localStorage.setItem('ss_feedback', JSON.stringify(list)); } catch(e) { console.error(e); }
+  }
+
+  function mergeFeedback(cloudList, deleted){
+    var list = getFeedback();
+    var seen = {};
+    list.forEach(function(f){ seen[f.id] = true; });
+    cloudList.forEach(function(f){
+      if (!f || !f.id || seen[f.id] || deleted.indexOf(f.id) !== -1) return;
+      seen[f.id] = true;
+      list.push(f);
+    });
+    list.sort(function(a, b){ return String(b.timestamp || '').localeCompare(String(a.timestamp || '')); });
+    saveFeedback(list);
+  }
+
+  function formatWhen(ts){
+    var d = new Date(ts);
+    if (isNaN(d.getTime())) return escapeHtml(ts || '-');
+    return d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function starsHtml(n){
+    n = Number(n) || 0;
+    if (!n) return '<span style="color:var(--muted);">—</span>';
+    var out = '';
+    for (var i = 1; i <= 5; i++) out += i <= n ? '★' : '<span class="off">★</span>';
+    return '<span class="fb-stars" title="' + n + ' / 5">' + out + '</span>';
+  }
+
+  function renderFeedback(){
+    var list = getFeedback();
+    var tbody = document.getElementById('feedbackTbody');
+    var empty = document.getElementById('feedbackEmpty');
+    var table = document.getElementById('feedbackTable');
+    var rated = list.filter(function(f){ return Number(f.rating) > 0; });
+    var avg = rated.length ? rated.reduce(function(s, f){ return s + Number(f.rating); }, 0) / rated.length : 0;
+
+    document.getElementById('feedbackSummary').textContent = list.length
+      ? list.length + ' message' + (list.length === 1 ? '' : 's') + (rated.length ? ' · average rating ' + avg.toFixed(1) + ' / 5' : '')
+      : 'No feedback yet';
+
+    table.style.display = list.length ? '' : 'none';
+    empty.style.display = list.length ? 'none' : 'block';
+    tbody.innerHTML = list.map(function(f, i){
+      return '<tr>' +
+        '<td>' + (i + 1) + '</td>' +
+        '<td style="white-space:nowrap;">' + formatWhen(f.timestamp) + '</td>' +
+        '<td>' + escapeHtml(f.name || 'Anonymous') + '</td>' +
+        '<td>' + (f.className ? '<span class="badge ' + getClassBadgeClass(f.className) + '">' + escapeHtml(f.className) + '</span>' : '-') + '</td>' +
+        '<td>' + starsHtml(f.rating) + '</td>' +
+        '<td><div class="fb-message">' + escapeHtml(f.message || '') + '</div></td>' +
+        '<td><button type="button" class="btn-row-action delete" onclick="deleteFeedback(\'' + escapeHtml(f.id) + '\')">🗑️</button></td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  window.deleteFeedback = function(id){
+    if (!confirm('Delete this feedback message?')) return;
+    markDeleted([id]);
+    saveFeedback(getFeedback().filter(function(f){ return f.id !== id; }));
+    renderFeedback();
+  };
+
+  window.exportFeedbackCSV = function(){
+    var list = getFeedback();
+    if (!list.length){ alert('No feedback to export.'); return; }
+    var esc = function(v){ return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; };
+    var rows = [['Date', 'Name', 'Class', 'Rating', 'Feedback', 'Language']].concat(list.map(function(f){
+      return [f.timestamp, f.name || 'Anonymous', f.className || '', f.rating || '', f.message || '', f.language || ''];
+    }));
+    var csv = '\ufeff' + rows.map(function(r){ return r.map(esc).join(','); }).join('\r\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = 'sunday_school_feedback_' + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
   };
 
   var ALL_CLASSES = ['Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'];

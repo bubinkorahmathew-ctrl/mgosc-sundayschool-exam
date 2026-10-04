@@ -43,6 +43,10 @@ To see results from every student's device in `admin.html`:
 
 Without a URL in `sync-config.js`, the admin portal only shows attempts taken in its own browser.
 
+### Feedback
+
+The **Give Feedback** button on the home page sends a message (optional name, class and 1–5 star rating) to the same Apps Script, which stores it in a **Feedback** tab of the Sheet. The admin portal lists it under **Student Feedback** (with delete and CSV export). Feedback is also kept in the sender's browser as `ss_feedback`.
+
 ## Question banks
 
 Each class page has its question bank embedded as a JavaScript array. Each entry looks like:
