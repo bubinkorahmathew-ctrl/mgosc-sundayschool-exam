@@ -85,6 +85,7 @@
       max-width: 820px;
       display: flex;
       justify-content: flex-end;
+      flex-wrap: wrap;
       gap: 10px;
       margin-bottom: 8px;
     }
@@ -104,6 +105,10 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
       transition: all 0.2s ease;
       font-family: inherit;
+    }
+
+    a.ctrl-btn {
+      text-decoration: none;
     }
 
     .ctrl-btn:hover {
@@ -578,6 +583,10 @@
 
   <!-- Controls -->
   <div class="top-bar">
+    <a class="ctrl-btn" href="support.html" title="Watch the exam tutorial video">
+      <span aria-hidden="true">▶</span>
+      <span data-en="Watch Tutorial" data-ml="ട്യൂട്ടോറിയൽ കാണുക">Watch Tutorial</span>
+    </a>
     <button class="ctrl-btn" id="langToggleBtn" onclick="toggleLanguage()" title="Toggle Language">
       <span id="langIcon">A / അ</span>
       <span id="langLabel">മലയാളം</span>
@@ -713,7 +722,7 @@
     </div>
 
     <footer>
-      Practice exam for MGOSC Sunday School Exam Portal &middot; M.G.O.S.C &middot; OSSAE, Thrissur Diocese &middot; developed by <a href="https://portfolio-pi-roan-40.vercel.app/" target="_blank" rel="noopener noreferrer">bubinkm</a> &middot; <a href="support.html" style="font-weight:bold; padding:4px 8px; border:1px solid var(--border); border-radius:6px; background:var(--surface-2);">Exam Tutorial</a>
+      Practice exam for MGOSC Sunday School Exam Portal &middot; M.G.O.S.C &middot; OSSAE, Thrissur Diocese &middot; developed by <a href="https://portfolio-pi-roan-40.vercel.app/" target="_blank" rel="noopener noreferrer">bubinkm</a>
     </footer>
   </div>
 
