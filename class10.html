@@ -416,7 +416,7 @@
 
 <div class="app">
   <img src="header.jpg" alt="Header Image" class="header-img" style="max-width:100%;height:auto;margin:16px 0;">
-  <a class="home-link" id="homeLink" href="index.html" data-t="homeLink">&larr; Choose another class</a>
+  <a class="home-link" id="homeLink" href="index.html" data-t="homeLink">&larr; Go to Home Page</a>
   
   <header class="top">
     <div class="brand">
@@ -526,7 +526,7 @@
     <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:3.3%"></div></div>
 
     <div class="q-meta-row">
-      <div class="q-topic" id="qTopic">Topic</div>
+      <div class="q-topic" id="qTopic"></div>
       <button type="button" class="btn-translate" id="btnTranslate" title="Translate Question">
         <span>🌐</span> <span id="translateText">മലയാളം</span>
       </button>
@@ -621,7 +621,7 @@ var UI = {
   en:{
     brandTitle:"Class X — Secondary Certificate",
     brandSub:"O.S.S.A.E. · All Divisions",
-    homeLink:"← Choose another class",
+    homeLink:"← Go to Home Page",
     lblLang:"Choose Exam Language",
     lblName:"Student Name",
     lblRoll:"Roll Number",
@@ -674,7 +674,7 @@ var UI = {
   ml:{
     brandTitle:"ക്ലാസ്സ് X — സെക്കൻഡറി സർട്ടിഫിക്കറ്റ്",
     brandSub:"ഒ.എസ്.എസ്.എ.ഇ · എല്ലാ ഡിവിഷനുകളും",
-    homeLink:"← മറ്റൊരു ക്ലാസ്സ് തിരഞ്ഞെടുക്കുക",
+    homeLink:"← ഹോം പേജിലേക്ക് പോകുക",
     lblLang:"പരീക്ഷ ഭാഷ തിരഞ്ഞെടുക്കുക",
     lblName:"വിദ്യാർത്ഥിയുടെ പേര്",
     lblRoll:"റോൾ നമ്പർ",
@@ -806,7 +806,12 @@ var lt = document.getElementById('langToggle'); if (lt) lt.addEventListener('cli
 
 // Setup Form State
 var VALID_CODES = ["200101", "200102", "200103", "200104", "200201", "200204", "190101", "190102", "190104", "190105", "190106", "190107", "190202", "190203", "190204", "190205", "190206", "190208", "190209", "190211", "190304", "190305", "190306", "190402", "190403", "190501", "190502", "190503", "190505", "190506", "190507", "190508", "190510", "190513", "190514", "190601", "190602", "190603"];
-var VALID_DIOCESE = "Kottayam Diocese";
+var THRISSUR_CODES = ["260310", "123456"];
+// Each diocese accepts only its own school codes
+var DIOCESE_CODES = {
+  "Kottayam Diocese": VALID_CODES,
+  "Thrissur Diocese": THRISSUR_CODES
+};
 
 var nameInput = document.getElementById('studentName');
 var rollInput = document.getElementById('rollNumber');
@@ -835,11 +840,16 @@ function showCodeErrorModal(){
 }
 
 function isCodeValid(code){
-  return VALID_CODES.indexOf(code) !== -1;
+  var d = dioceseSelect ? dioceseSelect.value.trim() : '';
+  if (DIOCESE_CODES.hasOwnProperty(d)) return DIOCESE_CODES[d].indexOf(code) !== -1;
+  for (var key in DIOCESE_CODES){
+    if (DIOCESE_CODES[key].indexOf(code) !== -1) return true;
+  }
+  return false;
 }
 
 function isDioceseValid(diocese){
-  return diocese === VALID_DIOCESE;
+  return DIOCESE_CODES.hasOwnProperty(diocese);
 }
 
 // Navigation prevention during exam
@@ -1063,7 +1073,7 @@ function renderQuestion(){
   document.getElementById('progressLabel').textContent = t('question') + ' ' + (state.idx + 1) + ' / ' + total;
   document.getElementById('scoreLive').textContent = t('score') + ': ' + state.score;
   document.getElementById('progressFill').style.width = (((state.idx) / total) * 100) + '%';
-  document.getElementById('qTopic').textContent = t('unitWord') + ' ' + item.unit + ': ' + item.topic[lang];
+  document.getElementById('qTopic').textContent = '';
   document.getElementById('qText').textContent = item.q[lang];
 
   if (!item._shuffled){
@@ -1294,7 +1304,7 @@ function buildReview(){
     div.className = 'review-item';
     var qDiv = document.createElement('div');
     qDiv.className = 'review-q';
-    qDiv.textContent = (i+1) + '. [' + a.topic[lang] + '] ' + a.q[lang];
+    qDiv.textContent = (i+1) + '. ' + a.q[lang];
     div.appendChild(qDiv);
 
     var aDiv = document.createElement('div');

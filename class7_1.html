@@ -370,7 +370,7 @@
 
 <div class="app">
   <p class="org-header">M.G.O.S.C &middot; OSSAE, Thrissur Diocese</p>
-  <a class="home-link" id="homeLink" href="index.html" data-t="homeLink">&larr; Choose another class</a>
+  <a class="home-link" id="homeLink" href="index.html" data-t="homeLink">&larr; Go to Home Page</a>
   <header class="top">
     <div class="brand">
       <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -431,7 +431,7 @@
       </button>
     </div>
 
-    <div class="q-unit" id="qUnit">Unit 1</div>
+    <div class="q-unit" id="qUnit" style="display:none"></div>
     <p class="q-text" id="qText">Question text</p>
     <div class="options" id="qOptions"></div>
 
@@ -485,7 +485,7 @@ var UI = {
   en:{
     brandTitle:"Class VII Bible Quiz",
     brandSub:"O.S.S.A.E. · Galilee Division",
-    homeLink:"← Choose another class",
+    homeLink:"← Go to Home Page",
     lblLang:"Choose Exam Language",
     lblName:"Student name",
     lblCount:"Number of questions",
@@ -519,7 +519,7 @@ var UI = {
   ml:{
     brandTitle:"ക്ലാസ്സ് 7 ബൈബിൾ പരീക്ഷ",
     brandSub:"ഒ.എസ്.എസ്.എ.ഇ · ഗലീലാ ഡിവിഷൻ",
-    homeLink:"← മറ്റൊരു ക്ലാസ്സ് തിരഞ്ഞെടുക്കുക",
+    homeLink:"← ഹോം പേജിലേക്ക് പോകുക",
     lblLang:"പരീക്ഷ ഭാഷ തിരഞ്ഞെടുക്കുക",
     lblName:"വിദ്യാർത്ഥിയുടെ പേര്",
     lblCount:"ചോദ്യങ്ങളുടെ എണ്ണം",
@@ -873,17 +873,9 @@ function renderQuestion(){
   document.getElementById('progressLabel').textContent = t('question') + ' ' + (state.idx + 1) + ' / ' + total;
   document.getElementById('scoreLive').textContent = t('score') + ': ' + state.score;
   document.getElementById('progressFill').style.width = (((state.idx) / total) * 100) + '%';
-  document.getElementById('qUnit').textContent = t('unitWord') + ' ' + item.unit;
+  document.getElementById('qUnit').textContent = '';
   var qTopic = document.getElementById('qTopic');
-  if (qTopic){
-    if (item.topic && item.topic[lang]) {
-      qTopic.textContent = t('unitWord') + ' ' + item.unit + ': ' + item.topic[lang];
-    } else if (item.unit && item.ch) {
-      qTopic.textContent = t('unitWord') + ' ' + item.unit + ' · ' + t('chapterWord') + ' ' + item.ch;
-    } else if (item.unit) {
-      qTopic.textContent = t('unitWord') + ' ' + item.unit;
-    }
-  }
+  if (qTopic) qTopic.textContent = '';
   var trText = document.getElementById('translateText');
   if (trText) trText.textContent = (lang === 'en') ? 'മലയാളം' : 'English';
 
