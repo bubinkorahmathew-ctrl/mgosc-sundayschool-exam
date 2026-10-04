@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang='en'>
+<html lang='en' data-lang='en'>
 <head>
   <meta charset='UTF-8'>
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-  <title>Support - MGOSC Sunday School Exam Portal</title>
+  <title>Support - Sunday School Exam Portal</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+Malayalam:wght@400;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap');
     :root{--bg:#faf6ec;--surface:#ffffff;--surface-2:#f1e8d6;--ink:#2a1e14;--muted:#7a6c58;--border:#e4d8bf;--accent7:#7b1e2b;--accent6:#1f5c4d;--accent5:#235482;--accent10:#b45309;--accent12:#5b21b6;--gold:#a97a26;--shadow:0 18px 40px -20px rgba(42,30,20,.35);}
     @media (prefers-color-scheme: dark){:root:not([data-theme='light']){--bg:#141210;--surface:#1d1a16;--surface-2:#252019;--ink:#f1e6d3;--muted:#b8a68b;--border:#3c342a;--accent7:#e0929c;--accent6:#7fc9a9;--accent5:#6ea8dc;--accent10:#f59e0b;--accent12:#c084fc;--gold:#dcb567;--shadow:0 18px 40px -20px rgba(0,0,0,.6);}}
     :root[data-theme='dark']{--bg:#141210;--surface:#1d1a16;--surface-2:#252019;--ink:#f1e6d3;--muted:#b8a68b;--border:#3c342a;--accent7:#e0929c;--accent6:#7fc9a9;--accent5:#6ea8dc;--accent10:#f59e0b;--accent12:#c084fc;--gold:#dcb567;--shadow:0 18px 40px -20px rgba(0,0,0,.6);}
@@ -16,17 +16,135 @@
     video{max-width:100%;height:auto;border:1px solid var(--border);border-radius:12px;}
     a{color:var(--accent5);text-decoration:none;}
     a:hover{color:var(--gold);}
+    .procedure{margin:1.75rem 0 1rem;padding:1.4rem 1.6rem;text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);}
+    .procedure h2{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:1.6rem;margin:0 0 .75rem;color:var(--gold);}
+    .procedure h3{font-size:1rem;margin:1.25rem 0 .5rem;}
+    .procedure ol,.procedure ul{margin:0;padding-left:1.3rem;line-height:1.65;}
+    .procedure li{margin-bottom:.35rem;}
+    .procedure table{width:100%;border-collapse:collapse;font-size:.95rem;}
+    .procedure th,.procedure td{border:1px solid var(--border);padding:.5rem .7rem;text-align:left;}
+    .procedure th{background:var(--surface-2);}
+    .lang-bar{display:flex;justify-content:flex-end;margin-bottom:.5rem;}
+    .lang-btn{background:var(--surface);border:1px solid var(--border);color:var(--ink);padding:7px 14px;border-radius:999px;font:600 .85rem 'Source Sans 3',system-ui,sans-serif;cursor:pointer;}
+    .lang-btn:hover{border-color:var(--gold);}
+    html[data-lang='en'] .ml,html[data-lang='ml'] .en{display:none;}
+    html[data-lang='ml'] body{font-family:'Noto Sans Malayalam','Source Sans 3',system-ui,sans-serif;}
+    html[data-lang='ml'] .procedure h2,html[data-lang='ml'] h1{font-family:'Noto Sans Malayalam',sans-serif;font-size:1.45rem;}
+    @media (max-width:480px){body{padding:1rem;}.procedure{padding:1.1rem 1rem;}}
   </style>
 </head>
 <body>
   <div class='wrap'>
-    <h1>Support - MGOSC Sunday School Exam Portal</h1>
-    <p>Below is a tutorial video to help you get started with the exam portal.</p>
+    <div class='lang-bar'>
+      <button type='button' class='lang-btn' id='langBtn' onclick='toggleLang()'>A / അ <span id='langBtnLabel'>മലയാളം</span></button>
+    </div>
+    <h1 class='en'>Support - Sunday School Exam Portal</h1>
+    <h1 class='ml'>സഹായം - സൺഡേ സ്കൂൾ പരീക്ഷ പോർട്ടൽ</h1>
+    <p class='en'>Below is a tutorial video to help you get started with the exam portal.</p>
+    <p class='ml'>പരീക്ഷ പോർട്ടൽ ഉപയോഗിക്കാൻ സഹായിക്കുന്ന ട്യൂട്ടോറിയൽ വീഡിയോ താഴെ കാണാം.</p>
     <video controls>
       <source src='videos/tutorial.mp4' type='video/mp4'>
       Your browser does not support the video tag.
     </video>
-    <p><a href='index.html'>&larr; Back to Home</a></p>
+
+    <section class='procedure en'>
+      <h2>Exam Procedure</h2>
+
+      <h3>Before you start</h3>
+      <ol>
+        <li>On the home page, choose your class.</li>
+        <li>Choose the exam language: English or Malayalam.</li>
+        <li>Enter your name, roll number and phone number.</li>
+        <li>Enter your <strong>Sunday School code</strong> and select your <strong>diocese</strong>. The code must match your diocese. If you see "Wrong code", please contact your Sunday School HM.</li>
+        <li>Press <strong>Start Exam</strong>, then <strong>I am Ready &middot; Start Exam</strong>. The timer starts immediately.</li>
+      </ol>
+
+      <h3>Questions and time</h3>
+      <table>
+        <tr><th>Class</th><th>Questions</th><th>Time</th></tr>
+        <tr><td>Classes 5 &ndash; 9</td><td>25</td><td>25 minutes</td></tr>
+        <tr><td>Classes 10 &ndash; 12</td><td>30</td><td>30 minutes</td></tr>
+      </table>
+
+      <h3>During the exam</h3>
+      <ul>
+        <li>Questions are chosen at random, so every attempt is different.</li>
+        <li>Each question has four options. Tap one answer; it cannot be changed after you choose.</li>
+        <li>The correct answer is shown right away. Press <strong>Next Question</strong> to continue.</li>
+        <li>Use the <strong>translate</strong> button to read a question in the other language.</li>
+        <li>Do not refresh or close the page during the exam.</li>
+        <li>When the time runs out, the exam is submitted automatically.</li>
+        <li><strong>Abort Exam</strong> ends the exam early, and the answers given so far are lost.</li>
+      </ul>
+
+      <h3>After the exam</h3>
+      <ul>
+        <li>Your score, percentage and time taken are shown. <strong>50% or above is a pass.</strong></li>
+        <li>Press <strong>Show Answer Review</strong> to see your answer and the correct answer for every question.</li>
+        <li>You can share your result, take the exam again, or go back to the home page.</li>
+      </ul>
+    </section>
+
+    <section class='procedure ml' lang='ml'>
+      <h2>പരീക്ഷാ നടപടിക്രമം</h2>
+
+      <h3>തുടങ്ങുന്നതിനു മുമ്പ്</h3>
+      <ol>
+        <li>ഹോം പേജിൽ നിന്ന് നിങ്ങളുടെ ക്ലാസ്സ് തിരഞ്ഞെടുക്കുക.</li>
+        <li>പരീക്ഷ ഭാഷ തിരഞ്ഞെടുക്കുക: ഇംഗ്ലീഷ് അല്ലെങ്കിൽ മലയാളം.</li>
+        <li>നിങ്ങളുടെ പേര്, റോൾ നമ്പർ, ഫോൺ നമ്പർ എന്നിവ നൽകുക.</li>
+        <li><strong>സൺഡേ സ്കൂൾ കോഡ്</strong> നൽകി <strong>ഭദ്രാസനം</strong> തിരഞ്ഞെടുക്കുക. കോഡ് നിങ്ങളുടെ ഭദ്രാസനവുമായി പൊരുത്തപ്പെടണം. "തെറ്റായ കോഡ്" എന്ന് കാണിച്ചാൽ ദയവായി സൺഡേ സ്കൂൾ HM മായി ബന്ധപ്പെടുക.</li>
+        <li><strong>പരീക്ഷ ആരംഭിക്കുക</strong> അമർത്തുക, തുടർന്ന് <strong>ഞാൻ തയ്യാറാണ് &middot; പരീക്ഷ ആരംഭിക്കുക</strong> അമർത്തുക. ഉടൻ തന്നെ സമയം ആരംഭിക്കും.</li>
+      </ol>
+
+      <h3>ചോദ്യങ്ങളും സമയവും</h3>
+      <table>
+        <tr><th>ക്ലാസ്സ്</th><th>ചോദ്യങ്ങൾ</th><th>സമയം</th></tr>
+        <tr><td>ക്ലാസ്സ് 5 &ndash; 9</td><td>25</td><td>25 മിനിറ്റ്</td></tr>
+        <tr><td>ക്ലാസ്സ് 10 &ndash; 12</td><td>30</td><td>30 മിനിറ്റ്</td></tr>
+      </table>
+
+      <h3>പരീക്ഷ നടക്കുമ്പോൾ</h3>
+      <ul>
+        <li>ചോദ്യങ്ങൾ ക്രമരഹിതമായി തിരഞ്ഞെടുക്കുന്നതിനാൽ ഓരോ പരീക്ഷയും വ്യത്യസ്തമായിരിക്കും.</li>
+        <li>ഓരോ ചോദ്യത്തിനും നാല് ഉത്തരങ്ങൾ ഉണ്ട്. ഒരു ഉത്തരം തിരഞ്ഞെടുക്കുക; തിരഞ്ഞെടുത്ത ശേഷം അത് മാറ്റാൻ കഴിയില്ല.</li>
+        <li>ശരിയായ ഉത്തരം ഉടൻ കാണിക്കും. തുടരാൻ <strong>അടുത്ത ചോദ്യം</strong> അമർത്തുക.</li>
+        <li>ചോദ്യം മറ്റേ ഭാഷയിൽ വായിക്കാൻ <strong>🌐 വിവർത്തന</strong> ബട്ടൺ ഉപയോഗിക്കുക.</li>
+        <li>പരീക്ഷയ്ക്കിടെ പേജ് റിഫ്രഷ് ചെയ്യുകയോ അടയ്ക്കുകയോ ചെയ്യരുത്.</li>
+        <li>സമയം കഴിഞ്ഞാൽ പരീക്ഷ സ്വയം സമർപ്പിക്കപ്പെടും.</li>
+        <li><strong>പരീക്ഷ ഉപേക്ഷിക്കുക</strong> അമർത്തിയാൽ പരീക്ഷ നേരത്തെ അവസാനിക്കും, ഇതുവരെ നൽകിയ ഉത്തരങ്ങൾ നഷ്ടപ്പെടും.</li>
+      </ul>
+
+      <h3>പരീക്ഷയ്ക്ക് ശേഷം</h3>
+      <ul>
+        <li>നിങ്ങളുടെ സ്കോർ, ശതമാനം, എടുത്ത സമയം എന്നിവ കാണിക്കും. <strong>50% അല്ലെങ്കിൽ അതിൽ കൂടുതൽ ലഭിച്ചാൽ വിജയിക്കും.</strong></li>
+        <li>ഓരോ ചോദ്യത്തിന്റെയും നിങ്ങളുടെ ഉത്തരവും ശരിയായ ഉത്തരവും കാണാൻ <strong>ഉത്തരങ്ങൾ പരിശോധിക്കുക</strong> അമർത്തുക.</li>
+        <li>ഫലം പങ്കിടാം, വീണ്ടും പരീക്ഷയെഴുതാം, അല്ലെങ്കിൽ ഹോം പേജിലേക്ക് മടങ്ങാം.</li>
+      </ul>
+    </section>
+
+    <p><a href='index.html'><span class='en'>&larr; Back to Home</span><span class='ml'>&larr; ഹോം പേജിലേക്ക് മടങ്ങുക</span></a></p>
   </div>
+
+  <script>
+    // Shares the language choice (ss_lang) with the home page and exam pages
+    var lang = 'en';
+    try { lang = localStorage.getItem('ss_lang') === 'ml' ? 'ml' : 'en'; } catch (e) {}
+    try { var th = localStorage.getItem('ss_theme'); if (th) document.documentElement.setAttribute('data-theme', th); } catch (e) {}
+
+    function setLang(l) {
+      lang = l;
+      document.documentElement.setAttribute('data-lang', l);
+      document.documentElement.setAttribute('lang', l);
+      document.getElementById('langBtnLabel').textContent = l === 'en' ? 'മലയാളം' : 'English';
+      try { localStorage.setItem('ss_lang', l); } catch (e) {}
+    }
+
+    function toggleLang() {
+      setLang(lang === 'en' ? 'ml' : 'en');
+    }
+
+    setLang(lang);
+  </script>
 </body>
 </html>

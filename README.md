@@ -1,4 +1,4 @@
-# MGOSC Sunday School Exam Portal
+# Sunday School Exam Portal
 
 A static, browser-only exam portal for Sunday School classes V–XII (Kottayam Diocese). Students pick their class, enter their details and school code, and take a timed, bilingual (English / മലയാളം) multiple-choice exam. No server or build step is needed.
 
