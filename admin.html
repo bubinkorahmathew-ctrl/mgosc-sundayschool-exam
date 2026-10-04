@@ -640,9 +640,10 @@
       <div class="header-brand">
         <h1>Sunday School Exam Admin Portal</h1>
         <p>Candidate Attempt Logs &amp; Marksheet &middot; All Classes (Classes 5 to 12)</p>
+        <p id="cloudSyncStatus" style="font-size:.78rem; margin-top:4px;"></p>
       </div>
       <div style="display:flex; gap:10px; align-items:center;">
-        <button type="button" class="btn btn-outline" onclick="loadAttempts()" title="Refresh attempt records from storage">
+        <button type="button" class="btn btn-outline" onclick="loadAttempts()" title="Refresh attempt records from Google Sheet">
           <span>🔄</span> <span>Refresh</span>
         </button>
         <button type="button" class="btn btn-primary" onclick="exportCSV()">
@@ -842,25 +843,76 @@
         <li>Create a new spreadsheet in <a href="https://sheets.new" target="_blank" style="color:var(--accent);">Google Sheets</a>.</li>
         <li>Click <b>Extensions</b> &rarr; <b>Apps Script</b>.</li>
         <li>Paste the script below and click <b>Deploy &rarr; New Deployment &rarr; Select type: Web App</b>.</li>
-        <li>Set <b>Who has access</b> to <b>Anyone</b>, then click <b>Deploy</b> and copy the URL here!</li>
+        <li>Set <b>Execute as</b> to <b>Me</b> and <b>Who has access</b> to <b>Anyone</b>, then click <b>Deploy</b> and copy the URL.</li>
+        <li>Paste the URL into <b>sync-config.js</b> on the website so every student's device sends results to it, then upload the site again.</li>
+        <li>If you change the script later, use <b>Deploy &rarr; Manage deployments &rarr; Edit &rarr; New version</b> so the URL stays the same.</li>
       </ol>
-      <pre class="code-block">function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(["ID", "Timestamp", "Class", "Student Name", "Roll No", "Phone", "School Code", "Diocese", "Score", "Total", "Percentage", "Status", "Duration"]);
+      <pre class="code-block">var HEADERS = ["ID", "Timestamp", "Class", "Student Name", "Roll No", "Phone", "School Code", "Diocese", "Score", "Total", "Percentage", "Status", "Duration", "Data"];
+
+function getSheet_() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  if (sheet.getLastRow() === 0) sheet.appendRow(HEADERS);
+  else sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+  return sheet;
+}
+
+function json_(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+
+// Students' devices send each attempt here; the same attempt ID updates its existing row
+function doPost(e) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var d = JSON.parse(e.postData.contents);
+    var sheet = getSheet_();
+    var row = [d.id, d.timestamp, d.className, d.studentName, d.rollNumber, d.studentPhone,
+      d.schoolCode, d.diocese, d.score, d.totalQuestions, d.percentage, d.status, d.durationStr,
+      JSON.stringify(d)];
+    var last = sheet.getLastRow();
+    var target = 0;
+    if (last &gt; 1) {
+      var ids = sheet.getRange(2, 1, last - 1, 1).getValues();
+      for (var i = 0; i &lt; ids.length; i++) {
+        if (String(ids[i][0]) === String(d.id)) { target = i + 2; break; }
+      }
+    }
+    if (target) sheet.getRange(target, 1, 1, row.length).setValues([row]);
+    else sheet.appendRow(row);
+    return json_({ status: "ok" });
+  } finally {
+    lock.releaseLock();
   }
-  var data = JSON.parse(e.postData.contents);
-  sheet.appendRow([
-    data.id, data.timestamp, data.className, data.studentName,
-    data.rollNumber, data.studentPhone, data.schoolCode, data.diocese,
-    data.score, data.totalQuestions, data.percentage + '%', data.status, data.durationStr
-  ]);
-  return ContentService.createTextOutput(JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
+}
+
+// The admin portal reads all attempts from here
+function doGet(e) {
+  var sheet = getSheet_();
+  var last = sheet.getLastRow();
+  var list = [];
+  if (last &gt; 1) {
+    sheet.getRange(2, 1, last - 1, HEADERS.length).getValues().forEach(function (r) {
+      var d = null;
+      try { d = r[13] ? JSON.parse(r[13]) : null; } catch (err) {}
+      if (!d) {
+        d = {
+          id: String(r[0]), timestamp: r[1] instanceof Date ? r[1].toISOString() : String(r[1]),
+          className: r[2], studentName: r[3], rollNumber: String(r[4]), studentPhone: String(r[5]),
+          schoolCode: String(r[6]), diocese: r[7], score: Number(r[8]), totalQuestions: Number(r[9]),
+          percentage: parseFloat(r[10]) || 0, status: r[11], durationStr: r[12]
+        };
+      }
+      list.push(d);
+    });
+  }
+  return json_({ status: "ok", attempts: list });
 }</pre>
     </details>
   </div>
 </div>
 
+<script src="sync-config.js"></script>
 <script>
 (function(){
   "use strict";
@@ -921,7 +973,7 @@
     if (sessionStorage.getItem('ss_admin_auth') === 'true'){
       authScreen.style.display = 'none';
       dashboardContent.style.display = 'block';
-      loadAttempts();
+      window.loadAttempts();
     } else {
       authScreen.style.display = 'flex';
       dashboardContent.style.display = 'none';
@@ -936,7 +988,7 @@
       authError.style.display = 'none';
       authScreen.style.display = 'none';
       dashboardContent.style.display = 'block';
-      loadAttempts();
+      window.loadAttempts();
     } else {
       authError.style.display = 'block';
       authPinInput.select();
@@ -975,6 +1027,78 @@
     renderStats();
     renderTable();
   }
+
+  // Cloud sync: read every student's attempts back from the Google Sheet
+  function getCloudUrl(){
+    var url = window.SS_CLOUD_ENDPOINT || localStorage.getItem('ss_cloud_endpoint') || '';
+    url = url.trim();
+    return url.indexOf('http') === 0 ? url : '';
+  }
+
+  function getDeletedIds(){
+    try { return JSON.parse(localStorage.getItem('ss_deleted_ids') || '[]'); } catch(e) { return []; }
+  }
+
+  function markDeleted(ids){
+    var list = getDeletedIds();
+    ids.forEach(function(id){ if (list.indexOf(id) === -1) list.push(id); });
+    try { localStorage.setItem('ss_deleted_ids', JSON.stringify(list)); } catch(e) {}
+  }
+
+  function setSyncStatus(text, isError){
+    var el = document.getElementById('cloudSyncStatus');
+    if (!el) return;
+    el.textContent = text;
+    el.style.color = isError ? 'var(--bad, #c0392b)' : 'var(--muted)';
+  }
+
+  var pulling = false;
+  function pullFromCloud(){
+    var url = getCloudUrl();
+    if (!url){
+      setSyncStatus('Cloud sync not set up — showing results from this device only.', true);
+      return;
+    }
+    if (pulling) return;
+    pulling = true;
+    setSyncStatus('Syncing with Google Sheet…');
+    fetch(url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=list&t=' + Date.now())
+      .then(function(res){ return res.json(); })
+      .then(function(data){
+        if (!data || !Array.isArray(data.attempts)) throw new Error('Unexpected response from Google Sheet');
+        var deleted = getDeletedIds();
+        var byId = {};
+        var merged = getAttempts();
+        merged.forEach(function(a, i){ byId[a.id] = i; });
+        data.attempts.forEach(function(c){
+          if (!c || !c.id || String(c.id).indexOf('test_') === 0 || deleted.indexOf(c.id) !== -1) return;
+          if (byId.hasOwnProperty(c.id)){
+            var local = merged[byId[c.id]];
+            // Keep a finished local record over an older in-progress copy from the sheet
+            if (c.status === 'IN PROGRESS' && local.status !== 'IN PROGRESS') return;
+            merged[byId[c.id]] = Object.assign({}, local, c);
+          } else {
+            byId[c.id] = merged.length;
+            merged.push(c);
+          }
+        });
+        merged.sort(function(a, b){ return String(b.timestamp || '').localeCompare(String(a.timestamp || '')); });
+        try { localStorage.setItem('ss_exam_attempts', JSON.stringify(merged)); } catch(e) { console.error(e); }
+        loadAttempts();
+        setSyncStatus('Synced ' + data.attempts.length + ' records from Google Sheet at ' +
+          new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '.');
+      })
+      .catch(function(err){
+        console.warn('Cloud pull failed:', err);
+        setSyncStatus('Could not read from Google Sheet (' + err.message + '). Check the Apps Script deployment.', true);
+      })
+      .then(function(){ pulling = false; });
+  }
+
+  window.loadAttempts = function(){
+    loadAttempts();
+    pullFromCloud();
+  };
 
   var ALL_CLASSES = ['Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'];
 
@@ -1308,6 +1432,7 @@
   // Row Actions: Delete
   window.deleteAttempt = function(id){
     if (!confirm('Are you sure you want to delete this candidate attempt?')) return;
+    markDeleted([id]);
     var updated = attemptsData.filter(function(a){ return a.id !== id; });
     saveAttempts(updated);
   };
@@ -1315,6 +1440,7 @@
   window.clearAllAttempts = function(){
     if (!attemptsData.length) return;
     if (!confirm('WARNING: Are you sure you want to clear ALL attempt records? This action cannot be undone.')) return;
+    markDeleted(attemptsData.map(function(a){ return a.id; }));
     saveAttempts([]);
   };
 
@@ -1530,7 +1656,7 @@
 
   // Cloud Sync Settings
   window.openCloudModal = function(){
-    var currentUrl = localStorage.getItem('ss_cloud_endpoint') || '';
+    var currentUrl = getCloudUrl();
     document.getElementById('cloudUrlInput').value = currentUrl;
     document.getElementById('cloudModal').classList.add('active');
   };
@@ -1542,7 +1668,14 @@
   window.saveCloudEndpoint = function(){
     var url = document.getElementById('cloudUrlInput').value.trim();
     localStorage.setItem('ss_cloud_endpoint', url);
-    alert('Cloud endpoint saved!');
+    if (window.SS_CLOUD_ENDPOINT && url !== window.SS_CLOUD_ENDPOINT){
+      alert('Saved for this browser only. Students use the URL in sync-config.js — update that file and re-upload the site to change it for everyone.');
+    } else if (!window.SS_CLOUD_ENDPOINT){
+      alert('Saved for this browser only. To receive results from students\' devices, paste this URL into sync-config.js and re-upload the site.');
+    } else {
+      alert('Cloud endpoint saved!');
+    }
+    pullFromCloud();
   };
 
   window.testCloudSync = function(){
@@ -1553,7 +1686,7 @@
     }
     fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({
         id: "test_" + Date.now(),
         timestamp: new Date().toISOString(),
@@ -1595,7 +1728,7 @@
     list.forEach(function(attempt){
       fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(attempt),
         mode: 'no-cors'
       }).then(function(){ sent++; });
@@ -1641,8 +1774,11 @@
     }
   });
   window.addEventListener('focus', function(){
-    loadAttempts();
+    if (sessionStorage.getItem('ss_admin_auth') === 'true') window.loadAttempts();
   });
+  setInterval(function(){
+    if (sessionStorage.getItem('ss_admin_auth') === 'true' && !document.hidden) pullFromCloud();
+  }, 60000);
 
   // Init
   checkSessionAuth();

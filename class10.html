@@ -83,7 +83,7 @@
   .malayalam, [lang="ml"]{ font-family: 'Noto Sans Malayalam', 'Source Sans 3', sans-serif; }
 
   .app{ width:100%; max-width:660px; animation:fadeUp .45s ease both; }
-  @keyframes fadeUp{ from{{ opacity:0; transform:translateY(10px); }} to{{ opacity:1; transform:none; }} }
+  @keyframes fadeUp{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
 
   header.top{
     display:flex; align-items:flex-start; justify-content:space-between;
@@ -127,18 +127,18 @@
     background-size:200% 100%;
     animation:sheen 6s linear infinite;
   }
-  @keyframes sheen{{ to{{ background-position:200% 0; }} }}
+  @keyframes sheen{ to{ background-position:200% 0; } }
 
   .field{ margin-bottom:18px; }
   .field label{
     display:block; font-weight:600; font-size:.82rem; margin-bottom:6px;
     color:var(--muted); text-transform:uppercase; letter-spacing:.04em;
   }
-  input[type="text"], select{{
+  input[type="text"], select{
     width:100%; padding:11px 13px; border-radius:10px; border:1px solid var(--border);
     background:var(--surface-2); color:var(--ink); font-size:1rem; font-family:inherit;
-  }}
-  input[type="text"]:focus-visible, select:focus-visible{{ outline:2px solid var(--accent); outline-offset:1px; }}
+  }
+  input[type="text"]:focus-visible, select:focus-visible{ outline:2px solid var(--accent); outline-offset:1px; }
 
   /* Language Selector Chips */
   .lang-chips{
@@ -612,6 +612,7 @@
   </div>
 </div>
 
+<script src="sync-config.js"></script>
 <script>
 (function(){
 "use strict";
@@ -1185,13 +1186,14 @@ function saveExamAttempt(attempt){
   }
 
   try {
-    var cloudUrl = localStorage.getItem('ss_cloud_endpoint');
+    var cloudUrl = window.SS_CLOUD_ENDPOINT || localStorage.getItem('ss_cloud_endpoint');
     if (cloudUrl && cloudUrl.trim().startsWith('http')) {
       fetch(cloudUrl.trim(), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(attempt),
-        mode: 'no-cors'
+        mode: 'no-cors',
+        keepalive: true
       }).catch(function(err){
         console.warn('Cloud sync error:', err);
       });

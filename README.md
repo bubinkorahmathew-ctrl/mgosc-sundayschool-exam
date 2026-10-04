@@ -30,9 +30,18 @@ Everything is stored in the browser's `localStorage`:
 
 - `ss_exam_attempts` — attempt log read by `admin.html`
 - `ss_lang`, `ss_theme` — language and light/dark preference
-- `ss_cloud_endpoint` — optional URL (set in `admin.html`) that results are also POSTed to
+- `ss_cloud_endpoint` — per-browser fallback for the cloud URL (set in `admin.html`)
+- `ss_deleted_ids` — attempts the admin deleted, so they are not re-imported from the Sheet
 
-Attempts are only visible in `admin.html` on the same browser/device unless a cloud endpoint is configured.
+### Cloud sync (Google Sheet)
+
+To see results from every student's device in `admin.html`:
+
+1. Set up the Google Apps Script shown in **admin.html → Cloud Sync → How to set up** (Deploy as Web App, Execute as *Me*, access *Anyone*).
+2. Paste the Web App URL (ending in `/exec`) into [`sync-config.js`](sync-config.js) and publish the site.
+3. Each class page then sends every attempt to the Sheet (one row per attempt, updated as it progresses). The admin portal reads the Sheet on login, on **Refresh**, when the tab regains focus, and every minute.
+
+Without a URL in `sync-config.js`, the admin portal only shows attempts taken in its own browser.
 
 ## Question banks
 
