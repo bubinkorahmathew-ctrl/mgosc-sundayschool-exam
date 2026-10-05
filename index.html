@@ -1052,6 +1052,11 @@
           <input type="text" id="fbName" maxlength="80" autocomplete="name">
         </div>
         <div class="fb-field">
+          <label for="fbPhone" data-en="Phone number (optional)" data-ml="ഫോൺ നമ്പർ (ഐച്ഛികം)">Phone number (optional)</label>
+          <input type="tel" id="fbPhone" maxlength="20" autocomplete="tel" inputmode="tel" placeholder="+91xxxxxxxxxx">
+          <div class="fb-error" id="fbPhoneError" style="margin:6px 0 0;" data-en="Please enter a valid phone number (7 to 15 digits)." data-ml="ശരിയായ ഫോൺ നമ്പർ നൽകുക (7 മുതൽ 15 അക്കങ്ങൾ).">Please enter a valid phone number (7 to 15 digits).</div>
+        </div>
+        <div class="fb-field">
           <label for="fbClass" data-en="Class (optional)" data-ml="ക്ലാസ്സ് (ഐച്ഛികം)">Class (optional)</label>
           <select id="fbClass">
             <option value="" data-en="— Select —" data-ml="— തിരഞ്ഞെടുക്കുക —">— Select —</option>
@@ -1192,6 +1197,7 @@
       document.getElementById('fbForm').style.display = '';
       document.getElementById('fbThanks').style.display = 'none';
       document.getElementById('fbError').style.display = 'none';
+      document.getElementById('fbPhoneError').style.display = 'none';
       fbRating = 0;
       paintStars();
       fbOverlay.classList.add('active');
@@ -1214,12 +1220,22 @@
         document.getElementById('fbMessage').focus();
         return;
       }
+      document.getElementById('fbError').style.display = 'none';
+      var phone = document.getElementById('fbPhone').value.trim();
+      var phoneDigits = phone.replace(/\D/g, '');
+      var phoneOk = !phone || (/^\+?[\d\s()-]+$/.test(phone) && phoneDigits.length >= 7 && phoneDigits.length <= 15);
+      document.getElementById('fbPhoneError').style.display = phoneOk ? 'none' : 'block';
+      if (!phoneOk) {
+        document.getElementById('fbPhone').focus();
+        return;
+      }
       var now = new Date();
       var fb = {
         type: 'feedback',
         id: 'fb_' + now.getTime() + '_' + Math.random().toString(36).substr(2, 6),
         timestamp: now.toISOString(),
         name: document.getElementById('fbName').value.trim(),
+        phone: phone,
         className: document.getElementById('fbClass').value,
         rating: fbRating,
         message: message,
